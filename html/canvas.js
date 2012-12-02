@@ -44,9 +44,9 @@ Number.prototype.min = function(a) {
 var _UNDEFINED;
 
 //objects classes
-canvasdemo = {}
+nodepong = {}
 
-canvasdemo.Ball = (function(opt) {
+nodepong.Ball = (function(opt) {
 	
 	var cls = function(opt) {
 	
@@ -140,7 +140,7 @@ canvasdemo.Ball = (function(opt) {
 			//console.log('intersection point: ' + p)
 
 			if (isOnLineSegment) {
-				if (o instanceof canvasdemo.Wall) {
+				if (o instanceof nodepong.Wall) {
 					// validate intersection is on a valid wall vertex, not part
 					// of the infinite line
 					return (p.x.between(o.x(), o.x() + o.width()) && p.y.between(o.y(), o.y() + o.height())) ? p : false;
@@ -159,14 +159,14 @@ canvasdemo.Ball = (function(opt) {
 			var b = o1.y() - m * o1.x();
 
 			// check line for intersection against all other game objects
-			for (var i=0; i<canvasdemo.gameState.length; i++) {
-				var o2 = canvasdemo.gameState[i];
+			for (var i=0; i<nodepong.gameState.length; i++) {
+				var o2 = nodepong.gameState[i];
 
 				// don't check against itself
 				if (o1 != o2) {
 
 					// intersection against wall objects
-					if (o2 instanceof canvasdemo.Wall) {
+					if (o2 instanceof nodepong.Wall) {
 						// x point = (y-b)/m
 						// y point = m*x + b
 						// wall lines are always vertical or horizontal, only need to use 1 formula to calculate intersect
@@ -185,7 +185,7 @@ canvasdemo.Ball = (function(opt) {
 						if (isIntersecting) {
 							for (var n in intersection) {
 								if (intersection[n]) {
-									var intersectLength = canvasdemo.util.pythag(o1.lastx(), o1.lasty(), intersection[n].x, intersection[n].y);
+									var intersectLength = nodepong.util.pythag(o1.lastx(), o1.lasty(), intersection[n].x, intersection[n].y);
 									console.log('len: ' + intersectLength + ' n: ' + n);
 									console.log(o1);
 
@@ -201,7 +201,7 @@ canvasdemo.Ball = (function(opt) {
 							o1.handleCollision(o2);
 						}
 						
-					} else if (o2 instanceof canvasdemo.Ball) { // intersection with other ball
+					} else if (o2 instanceof nodepong.Ball) { // intersection with other ball
 
 					}
 				}
@@ -213,9 +213,9 @@ canvasdemo.Ball = (function(opt) {
 		
 		this.handleCollision = function(o2) {
 			o1 = this;
-			if (o2 instanceof canvasdemo.Ball) {
+			if (o2 instanceof nodepong.Ball) {
 				// handle ball-ball collision
-			} else if (o2 instanceof canvasdemo.Wall) {
+			} else if (o2 instanceof nodepong.Wall) {
 				
 				console.log('colliding with: ' + _collisionSide);
 
@@ -258,33 +258,33 @@ canvasdemo.Ball = (function(opt) {
 				// }
 				
 				// apply bounce acceleration
-				var ba = canvasdemo.env.bounceAcceleration;
-				o1.xv(canvasdemo.util.capSpeed(ba*o1.xv()));
-				o1.yv(canvasdemo.util.capSpeed(ba*o1.yv()));
+				var ba = nodepong.env.bounceAcceleration;
+				o1.xv(nodepong.util.capSpeed(ba*o1.xv()));
+				o1.yv(nodepong.util.capSpeed(ba*o1.yv()));
 			}
 		};
 		
 		this.isOutOfBounds = function() {
 			var o = this;
-			var t = canvasdemo.walls.top.height();
+			var t = nodepong.walls.top.height();
 
 			// Factor in wall thickness as we consider anything beyond the edge
 			// of the interior wall to be 'out of bounds'. This is to resolve cases
 			// whereby the ball ends up inside the wall and avoids hit detection
 			// and a 'will be out of bounds' check.
-			if (o.x() < 0 + t || o.x() > canvasdemo.$canvas.width() - t 
-			|| o.y() < 0  + t|| o.y() > canvasdemo.$canvas.height() - t) {
+			if (o.x() < 0 + t || o.x() > nodepong.$canvas.width() - t 
+			|| o.y() < 0  + t|| o.y() > nodepong.$canvas.height() - t) {
 				return true;
 			}
 			return false;
 		};
 
 		this.draw = function() {
-			canvasdemo.ctx.beginPath();
-			canvasdemo.ctx.arc(this.x(), this.y(), this.rad(), 0, Math.PI*2, true);
-			canvasdemo.ctx.closePath();
-			canvasdemo.ctx.fillStyle = this.colour();
-			canvasdemo.ctx.fill();
+			nodepong.ctx.beginPath();
+			nodepong.ctx.arc(this.x(), this.y(), this.rad(), 0, Math.PI*2, true);
+			nodepong.ctx.closePath();
+			nodepong.ctx.fillStyle = this.colour();
+			nodepong.ctx.fill();
 		};
 	};
 	
@@ -292,7 +292,7 @@ canvasdemo.Ball = (function(opt) {
 	
 })();
 
-canvasdemo.Wall = (function(opt) {
+nodepong.Wall = (function(opt) {
 	
 	var cls = function(opt) {
 		var _x,
@@ -361,8 +361,8 @@ canvasdemo.Wall = (function(opt) {
 		};
 
 		this.draw = function() {
-			canvasdemo.ctx.fillStyle = this.colour();
-			canvasdemo.ctx.fillRect(this.x(), this.y(), this.width(), this.height());
+			nodepong.ctx.fillStyle = this.colour();
+			nodepong.ctx.fillRect(this.x(), this.y(), this.width(), this.height());
 		}
 		
 	}
@@ -371,7 +371,7 @@ canvasdemo.Wall = (function(opt) {
 	
 })();
 
-canvasdemo.env = (function(parent) {
+nodepong.env = (function(parent) {
 	var my = parent.env = parent.env || {};
 
 	my.framerate = 60;
@@ -384,11 +384,11 @@ canvasdemo.env = (function(parent) {
 	my.spinMultiplier = 2.0;
 	
 	return my;
-})(canvasdemo || {});
+})(nodepong || {});
 
-//canvasdemo
-canvasdemo = (function(parent) {
-	var my = canvasdemo || {};
+//nodepong
+nodepong = (function(parent) {
+	var my = nodepong || {};
 	
 	my.ctx = document.getElementById('canvas').getContext('2d');
 	my.$canvas = $('#canvas');
@@ -397,29 +397,29 @@ canvasdemo = (function(parent) {
 	my.walls = {};
 	
 	my.init = function() {
-		canvasdemo.util.clear();
+		nodepong.util.clear();
 		var time = (new Date()).getTime();
-		canvasdemo.animation.animate(time);
-		// canvasdemo.animation.initGameStateLoop();
+		nodepong.animation.animate(time);
+		// nodepong.animation.initGameStateLoop();
 	};
 
 	var createBoundary = function() {
 		// game boundaries
 		var wallThickness = 5;
 		var wallTop = new my.Wall({
-			x: 0, y: 0, width: canvasdemo.$canvas.width(), height: wallThickness
+			x: 0, y: 0, width: nodepong.$canvas.width(), height: wallThickness
 		});
 		
 		var wallBottom = new my.Wall({
-			x: 0, y: canvasdemo.$canvas.height() - wallThickness, width: canvasdemo.$canvas.width(), height: wallThickness
+			x: 0, y: nodepong.$canvas.height() - wallThickness, width: nodepong.$canvas.width(), height: wallThickness
 		});
 		
 		var wallLeft = new my.Wall({
-			x: 0, y:0, width: wallThickness, height: canvasdemo.$canvas.height()
+			x: 0, y:0, width: wallThickness, height: nodepong.$canvas.height()
 		});
 		
 		var wallRight = new my.Wall({
-			x: canvasdemo.$canvas.width() - wallThickness, y: 0, width: wallThickness, height: canvasdemo.$canvas.height()
+			x: nodepong.$canvas.width() - wallThickness, y: 0, width: wallThickness, height: nodepong.$canvas.height()
 		});
 		
 		my.gameState.push(wallLeft);
@@ -448,8 +448,8 @@ canvasdemo = (function(parent) {
 				var myball = new my.Ball({
 					x: e.pageX - $(this).offset().left, 
 					y: e.pageY - $(this).offset().top,
-					xv: Math.floor((Math.random()*canvasdemo.env.startSpeed)+canvasdemo.env.startSpeed/2)*xvSign,
-					yv: Math.floor((Math.random()*canvasdemo.env.startSpeed)+canvasdemo.env.startSpeed/2)*yvSign,
+					xv: Math.floor((Math.random()*nodepong.env.startSpeed)+nodepong.env.startSpeed/2)*xvSign,
+					yv: Math.floor((Math.random()*nodepong.env.startSpeed)+nodepong.env.startSpeed/2)*yvSign,
 					rad: 10,
 					colour: rgb
 				});
@@ -479,7 +479,7 @@ canvasdemo = (function(parent) {
 		var ph = 100, pw = 20;
 		var p = new my.Wall({
 			x: 10,
-			y: canvasdemo.$canvas.height()/2 - ph/2,
+			y: nodepong.$canvas.height()/2 - ph/2,
 			width: pw,
 			height: ph
 		})
@@ -489,12 +489,12 @@ canvasdemo = (function(parent) {
 		my.gameState.push(p);		
 		my.player = p;
 		my.gameState.remove(num);
-		var mouseMoveEvent = 'mousemove.CanvasDemo';
+		var mouseMoveEvent = 'mousemove.nodepong';
 		
-		canvasdemo.$canvas.mouseenter(function() {
+		nodepong.$canvas.mouseenter(function() {
 			$(this).on(mouseMoveEvent, function(e) {
-				var p = canvasdemo.player;
-				canvasdemo.util.updatePaddlePosition(e.pageY - $(this).offset().top - p.height()/2);
+				var p = nodepong.player;
+				nodepong.util.updatePaddlePosition(e.pageY - $(this).offset().top - p.height()/2);
 			});
 		}).mouseout(function() {
 			$(this).off(mouseMoveEvent);
@@ -508,29 +508,29 @@ canvasdemo = (function(parent) {
 		my.init();
 
 		$('#clearCanvas').click(function() {
-			canvasdemo.gameState = [];
-			canvasdemo.util.clear();
+			nodepong.gameState = [];
+			nodepong.util.clear();
 		});
 	});
 	
 	return my;
-})(canvasdemo || {});
+})(nodepong || {});
 
-canvasdemo.animation = (function(parent) {
+nodepong.animation = (function(parent) {
 	var my = parent.animation = parent.animation || {};
 
 	my.animate = function(lasttime) {
-		var state = canvasdemo.gameState;
+		var state = nodepong.gameState;
 		
 		var date = new Date(),
 			time = date.getTime(),
 			delta = time - lasttime;
 
 		requestAnimationFrame(function() {
-			canvasdemo.animation.animate(time);
+			nodepong.animation.animate(time);
 		});
 		
-		canvasdemo.util.clear();
+		nodepong.util.clear();
 		update(delta);
 	
 		for (var i=0; i<state.length; i++) {
@@ -542,19 +542,19 @@ canvasdemo.animation = (function(parent) {
 	};
 
 	my.initGameStateLoop = function() {
-		update(canvasdemo.env.framerateConstant);
+		update(nodepong.env.framerateConstant);
 	};
 	
 	var update = function(delta) {
 		
-		var state = canvasdemo.gameState;
+		var state = nodepong.gameState;
 		// all of our animation objects will have x, xv etc
 		for (var i=0; i<state.length; i++) {
 			var o = state[i];
 			
 			// 30fps == 33ms/frame
 			// 60fps == 16ms/frame
-			if (o instanceof canvasdemo.Ball) {
+			if (o instanceof nodepong.Ball) {
 			
 				// check if out of bounds
 				if (o.isOutOfBounds()) {
@@ -564,9 +564,9 @@ canvasdemo.animation = (function(parent) {
 					//return;
 				} else {
 					// apply next frame position
-					var framesDelta = delta/canvasdemo.env.framerateConstant;
-					var x = (Math.floor(o.x() + (o.xv()/canvasdemo.env.framerate*framesDelta)));
-					var y = (Math.floor(o.y() + (o.yv()/canvasdemo.env.framerate*framesDelta)));
+					var framesDelta = delta/nodepong.env.framerateConstant;
+					var x = (Math.floor(o.x() + (o.xv()/nodepong.env.framerate*framesDelta)));
+					var y = (Math.floor(o.y() + (o.yv()/nodepong.env.framerate*framesDelta)));
 					
 					console.log('Previous: ' + o.x() + ' : ' + o.y() + ' Next: ' + x + ' : ' + y);
 
@@ -584,18 +584,18 @@ canvasdemo.animation = (function(parent) {
 	
 		// setTimeout(function() {
 		// 	update(delta);
-		// }, canvasdemo.env.framerateConstant);
+		// }, nodepong.env.framerateConstant);
 	};
 	
 	return my;
-})(canvasdemo);
+})(nodepong);
 
-//canvasdemo.util
-canvasdemo.util = (function(parent) {
+//nodepong.util
+nodepong.util = (function(parent) {
 	var my = parent.util = parent.util || {};
 	
 	my.updatePaddlePosition = function(pos) {
-		canvasdemo.player.y(pos);
+		nodepong.player.y(pos);
 	}
 	
 	my.removeWall = function(wall) {
@@ -603,11 +603,11 @@ canvasdemo.util = (function(parent) {
 	}
 	
 	my.clear = function() {
-		canvasdemo.ctx.clearRect(0, 0, canvasdemo.$canvas.width(), canvasdemo.$canvas.height());
+		nodepong.ctx.clearRect(0, 0, nodepong.$canvas.width(), nodepong.$canvas.height());
 	}
 	
 	my.capSpeed = function(v) {
-		return (v >= canvasdemo.env.speedCap) ? canvasdemo.env.speedCap : v;
+		return (v >= nodepong.env.speedCap) ? nodepong.env.speedCap : v;
 	}
 	
 	my.pythag = function(x1, y1, x2, y2) {
@@ -621,4 +621,4 @@ canvasdemo.util = (function(parent) {
 	}
 	
 	return my;
-})(canvasdemo || {});
+})(nodepong || {});

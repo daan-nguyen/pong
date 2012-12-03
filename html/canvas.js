@@ -152,7 +152,6 @@ nodepong.Ball = (function(opt) {
 
 		this.isColliding = function() {
 			o1 = this;
-			var oob = this.isOutOfBounds();
 
 			// form the line formula for ball path
 			var m = (o1.y() - o1.lasty()) / (o1.x() - o1.lastx()); // line gradient
@@ -177,12 +176,20 @@ nodepong.Ball = (function(opt) {
 						intersection.left = validateIntersectionPoint(calculateYIntersection(o2.x(), m, b), o2);
 						intersection.right = validateIntersectionPoint(calculateYIntersection(o2.x() + o2.width(), m, b), o2);
 
+						// after all 4 walls are calculated we should have a valid intersection point on possibly
+						// 2 vertices. This can happen if the line segment of the ball passes through the entire
+						// wall due to the current veloicty of it.
 
+						// if there's a valid intersection then we know there has been a collision from the last point
+						// to the current point of the ball's path
 						var impactSide, distanceToIntersect = 9999999;
 						var isIntersecting = (intersection.top || intersection.bottom || intersection.left || intersection.right) ? true : false;
 
 						console.log(intersection);
 						if (isIntersecting) {
+							// calculate length to each intersection available from the last position. Then we take
+							// the shortest intersection path because this will represent the side that will be 
+							// impacted by the ball first.
 							for (var n in intersection) {
 								if (intersection[n]) {
 									var intersectLength = nodepong.util.pythag(o1.lastx(), o1.lasty(), intersection[n].x, intersection[n].y);
@@ -197,12 +204,14 @@ nodepong.Ball = (function(opt) {
 
 							}
 
+							// set impact side value to our ball and tell it to handle the collision
+							// against the object in question (o2)
 							_collisionSide = impactSide;
 							o1.handleCollision(o2);
 						}
 						
 					} else if (o2 instanceof nodepong.Ball) { // intersection with other ball
-
+						// not implemented
 					}
 				}
 
@@ -238,24 +247,7 @@ nodepong.Ball = (function(opt) {
 						break
 				}
 
-				_collisionSide = null;
-				
-				// if (o1.yv() > 0 && o1.y() >= (o2.y() - o1.rad()) && o1.y() <= o2.y()) { //going down, impact top
-				// 	o1.y(o2.y() - o1.rad());
-				// 	o1.yv(-o1.yv());
-				// } else // going up, impact bottom
-				// if (o1.yv() < 0 && o1.y() <= (o2.y() + o2.height() + o1.rad()) && o1.y() >= (o2.y() + o2.height())) {
-				// 	o1.y(o2.y() + o2.height() + o1.rad());
-				// 	o1.yv(-o1.yv());
-				// } else // going left, impact right
-				// if (o1.xv() < 0 && o1.x() <= (o2.x() + o2.width() + o1.rad())) {
-				// 	o1.x(o2.x() + o2.width() + o1.rad());
-				// 	o1.xv(-o1.xv());
-				// } else //going right, impact left
-				// if (o1.xv() > 0 && o1.x() >= (o2.x() - o1.rad())) {
-				// 	o1.x(o2.x() - o1.rad());
-				// 	o1.xv(-o1.xv());
-				// }
+				_collisionSide = _UNDEFINED;
 				
 				// apply bounce acceleration
 				var ba = nodepong.env.bounceAcceleration;
@@ -504,7 +496,7 @@ nodepong = (function(parent) {
 	$(document).ready(function() {
 		createBoundary();
 		bindTestEvents();
-		//setupPlayer();
+		setupPlayer();
 		my.init();
 
 		$('#clearCanvas').click(function() {

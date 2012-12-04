@@ -485,7 +485,7 @@ nodepong = (function(parent) {
 		// ball launch on click
 		nodepong.$canvas.click(function(e) {
 			var p = {x: e.pageX - $(this).offset().left,
-					 y: e.pageY - $(this).offset().top}
+					 y: e.pageY - $(this).offset().top};
 
 			for (var i=0; i<nodepong.gameState.length; i++) {
 				var o = nodepong.gameState[i];
@@ -506,6 +506,23 @@ nodepong = (function(parent) {
 
 		// arrow down - 40, arrow up - 38
 		// w - 87, s - 83
+		var customMouseMove = 'mousemove.nodepong';
+		nodepong.$canvas.mouseenter(function(e) {
+			$(this).on(customMouseMove, function(e) {
+				var y = e.pageY - $(this).offset().top - nodepong.env.paddleLength/2,
+					t = nodepong.env.outerWallThickness;
+
+				y = (y < 0 + t) ? 0 + t : y;
+				y = (y + nodepong.env.paddleLength > nodepong.$canvas.height() - t) ? 
+					nodepong.$canvas.height() - t - nodepong.env.paddleLength : y;
+
+				nodepong.players.p1.paddle.y(y);
+				nodepong.players.p2.paddle.y(y);
+
+			});
+		}).mouseleave(function(e) {
+			$(this).off(customMouseMove);
+		});
 
 	}
 	

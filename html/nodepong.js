@@ -120,7 +120,15 @@ nodepong.Ball = (function(opt) {
 		this.lasty = function() {
 			return _lasty;
 		}
-		
+
+		var capSpeed = function(v) {
+			return (v > nodepong.env.maxSpeed) ? nodepong.env.maxSpeed : v;
+		}
+
+		var applyBounceFactor = function(v) {
+			return capSpeed(v * nodepong.env.bounceFactor);
+		}
+
 		var boundaryCollision = function() {
 			var t = nodepong.env.outerWallThickness;
 
@@ -128,13 +136,15 @@ nodepong.Ball = (function(opt) {
 			if (_y <= 0 + t + _rad) {
 				_y = 0 + t + _rad;
 				_yv *= -1;
-				
+				_yv = applyBounceFactor(_yv);
+				_xv = applyBounceFactor(_xv);
 				return true;
 			// hit bottom boundary
 			} else if (_y >= nodepong.$canvas.height() - t - _rad) {
 				_y = nodepong.$canvas.height() - t - _rad;
 				_yv *= -1;
-
+				_yv = applyBounceFactor(_yv);
+				_xv = applyBounceFactor(_xv);
 				return true;
 			}
 
@@ -161,8 +171,10 @@ nodepong.Ball = (function(opt) {
 			if (isOnLineSegment) {
 				if (o instanceof nodepong.Wall) {
 					// validate intersection is on a valid wall vertex, not part
-					// of the infinite line
-					return (p.x.between(o.x(), o.x() + o.width()) && p.y.between(o.y(), o.y() + o.height())) ? p : false;
+					// of the infinite line + including radius of ball, this makes
+					// sure the ball bounces off it's surface and not it's centre
+					return (p.x.between(o.x() - _rad, o.x() + o.width() + _rad) && 
+							p.y.between(o.y() - _rad, o.y() + o.height() + _rad)) ? p : false;
 				}
 			}
 
@@ -247,6 +259,9 @@ nodepong.Ball = (function(opt) {
 					this.xv(-this.xv());
 					break
 			}
+
+			this.xv(applyBounceFactor(this.xv()));
+			this.yv(applyBounceFactor(this.yv()));
 
 			_collisionSide = _UNDEFINED;
 		}
@@ -388,12 +403,15 @@ nodepong.env = (function(parent) {
 	my.outerWallThickness = 20;
 	
 	// player vars
-	my.paddleLength = 80;
+	my.paddleLength = 100;
 	my.paddleWidth = my.outerWallThickness;
 
 	// ball vars
 	my.ballRadius = 10;
 	my.startSpeed = 200;
+	my.maxSpeed = 500;
+	my.bounceFactor = 1.1; // 10% speed increase off each bounce
+	my.spinFactor = 20;
 
 	my.physicsLoopDelay = 15;
 
@@ -414,8 +432,8 @@ nodepong = (function(parent) {
 		nodepong.util.clear();
 		var time = (new Date()).getTime();
 		
-		createField(nodepong.env.outerWallThickness);
-		my.createBall(nodepong.env.ballRadius);
+		createField();
+		my.createBall();
 		createPlayers();
 
 		bindGameKeys();
@@ -424,8 +442,10 @@ nodepong = (function(parent) {
 		nodepong.animation.startAnimateLoop();
 	}
 
-	var createField = function(wallThickness) {
+	var createField = function() {
 		
+		var wallThickness = nodepong.env.outerWallThickness;
+
 		// game boundaries
 		var wallTop = new my.Wall({
 			x: 0, y: 0, width: nodepong.$canvas.width(), height: wallThickness, noCollision: true
@@ -440,8 +460,9 @@ nodepong = (function(parent) {
 
 	}
 
-	my.createBall = function(radius) {
+	my.createBall = function() {
 		
+		var radius = nodepong.env.ballRadius;
 		var gameBall = new nodepong.Ball({
 			x: nodepong.$canvas.width()/2,
 			y: nodepong.$canvas.height()/2,
@@ -607,7 +628,7 @@ nodepong.animation = (function(parent) {
 			if (o instanceof nodepong.Ball) {
 				if (o.isOutOfBounds()) {
 					nodepong.gameState.remove(i);
-					nodepong.createBall(nodepong.env.ballRadius);
+					nodepong.createBall();
 				}
 
 				var x = o.x() + (o.xv()/1000)*delta;
@@ -648,7 +669,17 @@ nodepong.animation = (function(parent) {
 		});
 
 		nodepong.util.clear();
+		drawScores();
 
+		// draw game objects
+		for (var i=0; i<nodepong.gameState.length; i++) {
+			nodepong.gameState[i].draw();
+		}
+
+		drawFpsCounter(delta)
+	}
+	
+	var drawScores = function() {
 		// player 1 score
 		nodepong.ctx.fillStyle = 'black';
 		nodepong.ctx.textBaseline = 'top';
@@ -659,19 +690,16 @@ nodepong.animation = (function(parent) {
 		//player 2 score
 		nodepong.ctx.textAlign = 'right';
 		nodepong.ctx.fillText(nodepong.players.p2.score, nodepong.$canvas.width() - 40, 30);
+	}
 
-		// draw game objects
-		for (var i=0; i<nodepong.gameState.length; i++) {
-			nodepong.gameState[i].draw();
-		}
-
+	var drawFpsCounter = function(delta) {
 		// fps counter
 		nodepong.ctx.fillStyle = 'white';
 		nodepong.ctx.font = "8px 'Press Start 2P'"
 		nodepong.ctx.textAlign = 'left';
 		nodepong.ctx.fillText('FPS: ' + Math.floor(1000/delta), 5, nodepong.$canvas.height() - 13);
 	}
-	
+
 	return my;
 })(nodepong);
 
@@ -679,31 +707,8 @@ nodepong.animation = (function(parent) {
 nodepong.util = (function(parent) {
 	var my = parent.util = parent.util || {}
 	
-	my.movePaddleUp = function(player) {
-		var t = nodepong.env.outerWallThickness,
-			wall = player.paddle,
-			pos = wall.y() - 10;
-		
-		pos = (pos < 0 + t) ? 0 + t : pos;
-		wall.y(pos);
-	}
-
-	my.movePaddleDown = function(player) {
-		var t = nodepong.env.outerWallThickness,
-			wall = player.paddle,
-			pos = wall.y() + 10;
-
-		pos = (pos + wall.height() > nodepong.$canvas.height() - t) ? 
-				nodepong.$canvas.height() - t - wall.height() : pos;
-		wall.y(pos);
-	}
-	
 	my.clear = function() {
 		nodepong.ctx.clearRect(0, 0, nodepong.$canvas.width(), nodepong.$canvas.height());
-	}
-	
-	my.capSpeed = function(v) {
-		return (v >= nodepong.env.speedCap) ? nodepong.env.speedCap : v;
 	}
 	
 	my.pythag = function(x1, y1, x2, y2) {

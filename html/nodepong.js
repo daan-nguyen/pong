@@ -173,7 +173,7 @@ nodepong.Ball = (function(opt) {
 					// validate intersection is on a valid wall vertex, not part
 					// of the infinite line + including radius of ball, this makes
 					// sure the ball bounces off it's surface and not it's centre
-					return (p.x.between(o.x() - _rad, o.x() + o.width() + _rad) && 
+					return (p.x.between(o.x(), o.x() + o.width()) && 
 							p.y.between(o.y() - _rad, o.y() + o.height() + _rad)) ? p : false;
 				}
 			}
@@ -262,6 +262,9 @@ nodepong.Ball = (function(opt) {
 
 			this.xv(applyBounceFactor(this.xv()));
 			this.yv(applyBounceFactor(this.yv()));
+
+            // apply spin
+            this.yv(nodepong.env.spinFactor * o.yv() + this.yv());
 
 			_collisionSide = _UNDEFINED;
 		}

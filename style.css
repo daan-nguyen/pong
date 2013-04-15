@@ -3,3 +3,8 @@
 	display: block;
 	margin: 50px auto;
 }
+
+p {
+  width: 100%;
+  text-align: center;
+}
